@@ -59,33 +59,31 @@ ndarray get_element(ndarray *ndarr, int *indices, int indices_size) {
     if (indices_size > ndarr->ndim) {
       fprintf(stderr, "Index dimensions do not match with ndarray\n");
       exit(1);
-    } else { // because of previous conditions this just means
-             // index_dimensions < ndim
+    } else { // index_dimensions < ndim
       //  TODO: Figure out array subscripting without copying to allow in memory
       //        array change.
 
-      int x = ndarr->ndim - indices_size;
-      size_t size = 1;
-
-      for (int i = x; i < ndarr->ndim; i++) {
-        size *= ndarr->shape[i];
-      }
-
-      float *data = (float *)malloc(size * sizeof(float));
       int start_index = 0;
       int ndim = ndarr->ndim - indices_size;
       size_t *shape = (size_t *)malloc(ndim * sizeof(size_t));
 
       int count = 0;
-      for (int i = ndim; i < ndarr->ndim; i++) {
+      for (int i = ndim - 1; i < ndarr->ndim; i++) {
         shape[count++] = ndarr->shape[i];
       }
+
+      int size = 1;
+      for (int i = 0; i < ndim; i++) {
+        size *= shape[i];
+      }
+
+      float *data = (float *)malloc(size * sizeof(float));
 
       for (int i = 0; i < indices_size; i++) {
         start_index += indices[i] * ndarr->strides[i];
       }
 
-      printf("Start Index: %d\n", start_index);
+      printf("start index: %d\n", start_index);
       count = 0;
       for (int i = start_index;
            i < start_index + ndarr->strides[indices_size - 1]; i++) {
@@ -100,6 +98,85 @@ ndarray get_element(ndarray *ndarr, int *indices, int indices_size) {
   }
 }
 
+ndarray add(ndarray *arr1, ndarray *arr2) {
+  if (arr1->ndim != arr2->ndim) {
+    perror("dimensions are not the same of both the arrays");
+    exit(1);
+  }
+
+  for (int i = 0; i < arr1->ndim; i++) {
+    if (arr1->shape[i] != arr2->shape[i]) {
+      perror("ndarray shapes are uncompatable");
+    }
+  }
+
+  size_t *shape = (size_t *)malloc(arr1->ndim * sizeof(size_t));
+  for (int i = 0; i < arr1->ndim; i++) {
+    shape[i] = arr1->shape[i];
+  }
+
+  ndarray arr3 = Ndarray(shape, arr1->ndim);
+  for (int i = 0; i < arr1->items; i++) {
+    arr3.data[i] = arr1->data[i] + arr2->data[i];
+  }
+
+  return arr3;
+}
+
+ndarray sub(ndarray *arr1, ndarray *arr2) {
+  if (arr1->ndim != arr2->ndim) {
+    perror("dimensions are not the same of both the arrays");
+    exit(1);
+  }
+
+  for (int i = 0; i < arr1->ndim; i++) {
+    if (arr1->shape[i] != arr2->shape[i]) {
+      perror("ndarray shapes are uncompatable");
+    }
+  }
+
+  size_t *shape = (size_t *)malloc(arr1->ndim * sizeof(size_t));
+  for (int i = 0; i < arr1->ndim; i++) {
+    shape[i] = arr1->shape[i];
+  }
+
+  ndarray arr3 = Ndarray(shape, arr1->ndim);
+  for (int i = 0; i < arr1->items; i++) {
+    arr3.data[i] = arr1->data[i] - arr2->data[i];
+  }
+
+  return arr3;
+}
+
+ndarray mul(ndarray *arr1, ndarray *arr2) {
+  if (arr1->ndim != arr2->ndim) {
+    perror("encounterd incompatible shapes while multiplying ndarrays\n");
+    exit(1);
+  }
+
+  for (int i = 0; i < arr1->ndim; i++) {
+    if (arr1->shape[i] != arr2->shape[i]) {
+      perror("Shapes of ndarray not equal while multiplying\n");
+      exit(1);
+    }
+  }
+  // by this point shapes of both the arrays are exactly the same.
+
+  size_t *shape = (size_t *)malloc(arr1->ndim * sizeof(size_t));
+  for (int i = 0; i < arr1->ndim; i++) {
+    shape[i] = arr1->shape[i];
+  }
+
+  ndarray arr3 = Ndarray(shape, arr1->ndim);
+
+  for (int i = 0; i < arr1->items; i++) {
+    arr3.data[i] = arr1->data[i] * arr2->data[i];
+  }
+  return arr3;
+}
+
+//  TODO:  Instead of taking value as float, take value as ndarray or
+//         make a seprate function for that for convineance.
 void set_element(ndarray *ndarr, int *indices, float value) {
   int index = get_linear_index(ndarr->shape, indices, ndarr->ndim);
   ndarr->data[index] = value;
@@ -112,23 +189,19 @@ void flatten(ndarray *ndarr) {
 
 int main() {
   ndarray x = Ndarray((size_t[]){3, 3, 3}, 3);
+  ndarray y = Ndarray((size_t[]){3, 3, 3}, 3);
 
   for (int i = 3; i < 6; i++) {
     x.data[i] = 1.0f;
   }
-  for (int i = 0; i < x.items; i++) {
-    printf("%f\n", x.data[i]);
+
+  ndarray z = add(&x, &y);
+
+  printf("==========================\n");
+
+  for (int i = 0; i < z.items; i++) {
+    printf("%f\n", z.data[i]);
   }
-
-  printf("========================\n");
-
-  ndarray element = get_element(&x, (int[]){1}, 1);
-
-  for (int i = 0; i < element.ndim; i++) {
-    printf("%zu ", element.shape[i]);
-  }
-
-  printf("\n");
 
   return 0;
 }

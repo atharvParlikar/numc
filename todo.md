@@ -23,15 +23,15 @@
 
 **Indexing and Slicing:**
 
-1. `__getitem__(index)`: Returns a subset of the array based on the index.
-2. `__setitem__(index, value)`: Sets a subset of the array to the specified value.
+1. `__getitem__(index)`: Returns a subset of the array based on the index. ✅
+2. `__setitem__(index, value)`: Sets a subset of the array to the specified value. ✅
 3. `__delitem__(index)`: Deletes a subset of the array.
 
 **Mathematical Operations:**
 
-1. `__add__(other)`: Element-wise addition.
-2. `__sub__(other)`: Element-wise subtraction.
-3. `__mul__(other)`: Element-wise multiplication.
+1. `__add__(other)`: Element-wise addition. ✅
+2. `__sub__(other)`: Element-wise subtraction. ✅
+3. `__mul__(other)`: Element-wise multiplication. ✅
 4. `__truediv__(other)`: Element-wise division.
 5. `__pow__(other)`: Element-wise exponentiation.
 6. `dot(other)`: Matrix multiplication.
