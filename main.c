@@ -26,15 +26,12 @@ ndarray Ndarray(size_t *shape, int ndim) {
   x.shape = shape;
   x.ndim = ndim;
   x.itemsize = 4; // (4 byte | 32 bit) floats
-  x.strides = malloc((ndim - 1) * sizeof(float));
-  for (int i = 1; i < x.ndim; i++) {
-    int stride = 1;
-    for (int j = i; j < x.ndim; j++) {
-      stride *= x.shape[j];
-    }
-    x.strides[i - 1] = stride;
+  x.strides = malloc((ndim) * sizeof(float));
+  x.strides[ndim - 1] = x.itemsize;
+  int stride_index = ndim - 2;
+  for (int i = x.ndim - 1; i >= 0; i--) {
+      x.strides[stride_index--] = x.shape[i] * x.strides[i];
   }
-
   return x;
 }
 
@@ -276,13 +273,13 @@ int main() {
 
   printf("==========================\n");
 
-  ndarray test = Ndarray((size_t []){5,5,5,5,5}, 5);
+  ndarray test = Ndarray((size_t []){2, 3, 4}, 3);
   for (int i = 0; i < test.ndim; i++) {
       printf("%zu ", test.strides[i]);
   }
-  printf("\n");
-  for (int i = 0; i < z.ndim; i++) {
-      printf("%zu ", z.strides[i]);
+  printf("\nStrides\n");
+  for (int i = 0; i < test.ndim; i++) {
+      printf("%zu ", test.strides[i]);
   }
   printf("\n");
   return 0;
